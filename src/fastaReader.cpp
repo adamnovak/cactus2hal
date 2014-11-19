@@ -114,8 +114,27 @@ streampos FastaReader::skipToSequence(const string& sequenceName)
   while (_faFile.bad() != true)
   {
     skip();
+    
+    if(_faFile.eof())
+    {
+      stringstream ss;
+      ss << "Error skipping to sequence, " << sequenceName;
+      ss << ".. got EOF when expecting \">\"";
+      throw runtime_error(ss.str());
+    } 
+    else if(_faFile.fail()) 
+    {
+      stringstream ss;
+      ss << "Error skipping to sequence, " << sequenceName;
+      ss << ".. IO failure when expecting \">\"";
+      throw runtime_error(ss.str());
+    }
+    
+    // We know the file is good if it isn't EOF or fail.
+    
     if (_faFile.peek() != '>')
     {
+      // Something else is the problem.
       stringstream ss;
       ss << "Error skipping to sequence, " << sequenceName;
       ss << ".. got \"" << (char)_faFile.peek() << "\" when expecting \">\"";
